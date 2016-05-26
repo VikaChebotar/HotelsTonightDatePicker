@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">library</string>
+    <string name="checkIn">Check In</string>
+    <string name="checkOut">Check Out</string>
+</resources>

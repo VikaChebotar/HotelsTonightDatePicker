@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="date_picker_textcolor_primary">#fbfbfb</color>
+    <color name="date_picker_textcolor_secondary">#99fbfbfb</color>
+    <color name="date_picker_background">#363636</color>
+    <color name="orange_button">#f17e5b</color>
+</resources>
