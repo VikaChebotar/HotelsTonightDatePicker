@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="horizontal_margin">25dp</dimen>
+    <dimen name="titleTextSize">17sp</dimen>
+    <dimen name="side_margin">10dp</dimen>
+    <dimen name="item_horizontal_margin">5dp</dimen>
+    <dimen name="item_side_margin">7dp</dimen>
+    <dimen name="day_of_month_text_size">14sp</dimen>
+    <dimen name="day_of_week_text_size">9sp</dimen>
+    <dimen name="divider_text_size">15sp</dimen>
+</resources>

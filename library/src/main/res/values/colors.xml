@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="date_picker_textcolor_primary">#fbfbfb</color>
-    <color name="date_picker_textcolor_secondary">#99fbfbfb</color>
+    <color name="day_of_month_text_color">#fbfbfb</color>
+    <color name="day_of_week_text_color">#99fbfbfb</color>
     <color name="date_picker_background">#363636</color>
-    <color name="orange_button">#f17e5b</color>
+    <color name="selected_item_background_color">#f17e5b</color>
 </resources>
