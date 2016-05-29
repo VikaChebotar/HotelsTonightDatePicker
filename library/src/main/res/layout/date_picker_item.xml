@@ -8,13 +8,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:background="@drawable/custom_date_picker_selector"
         android:gravity="center_horizontal"
         android:orientation="vertical"
+        android:background="@drawable/custom_date_picker_selector"
         android:paddingBottom="@dimen/item_horizontal_margin"
+        android:paddingTop="@dimen/item_horizontal_margin"
         android:paddingLeft="@dimen/item_side_margin"
-        android:paddingRight="@dimen/item_side_margin"
-        android:paddingTop="@dimen/item_horizontal_margin">
+        android:paddingRight="@dimen/item_side_margin">
 
         <TextView
             android:id="@+id/dayOfTheMonth"
@@ -27,6 +27,8 @@
             android:id="@+id/dayOfTheWeek"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:ems="2"
+            android:gravity="center_horizontal"
             android:textAllCaps="true"
             android:textColor="@color/day_of_week_text_color"
             android:textSize="@dimen/day_of_week_text_size" />

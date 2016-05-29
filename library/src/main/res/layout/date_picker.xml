@@ -19,7 +19,7 @@
         android:id="@+id/datesContainter"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingLeft="@dimen/side_margin"
-        android:layout_marginBottom="@dimen/horizontal_margin"
-        android:paddingRight="@dimen/side_margin" />
+        android:layout_marginLeft="@dimen/side_margin"
+        android:layout_marginRight="@dimen/side_margin"
+        android:layout_marginBottom="@dimen/horizontal_margin"/>
 </merge>

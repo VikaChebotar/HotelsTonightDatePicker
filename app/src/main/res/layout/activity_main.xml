@@ -6,6 +6,7 @@
     tools:context="com.hotelstonightdatepicker.MainActivity">
 
     <com.library.CustomDatePicker
+        android:id="@+id/datePicker"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 </RelativeLayout>

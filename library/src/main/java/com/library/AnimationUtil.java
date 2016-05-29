@@ -16,7 +16,7 @@ public class AnimationUtil {
         view.animate().alpha(0).setDuration(ANIMATION_DURATION_SHORT).withEndAction(endAction).start();
     }
 
-    public static void animateTranslateAnimation(View view, float x, Runnable endAction) {
+    public static void animateTranslateAnimation(final View view, float x, final Runnable endAction) {
         view.animate().x(x).setDuration(ANIMATION_DURATION_LONG).withEndAction(endAction).start();
     }
 }

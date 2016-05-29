@@ -1,8 +1,13 @@
 package com.library;
 
 import android.content.Context;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.GravityCompat;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -15,9 +20,16 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-
+//TODO add atributes
+//TODO add saving state
+//TODO fix selected area size
+//TODO ondetachfromwindow
+//TODO open in fragment
+//TODO add scroll
+//TODO add dif days count
+//TODO check padding
 public class CustomDatePicker extends LinearLayout {
-    private static final int DATES_NUMBER = 8;
+    private static final int DATES_NUMBER = 7;
     private SimpleDateFormat monthFormat = new SimpleDateFormat("E", Locale.getDefault());
 
     private TextView title;
@@ -51,6 +63,7 @@ public class CustomDatePicker extends LinearLayout {
     private void init() {
         setOrientation(LinearLayout.VERTICAL);
         setBackgroundColor(ContextCompat.getColor(getContext(), R.color.date_picker_background));
+        setSaveEnabled(true);
         View view = LayoutInflater.from(getContext()).inflate(R.layout.date_picker, this);
         title = (TextView) view.findViewById(R.id.title);
         datesContainer = (FrameLayout) view.findViewById(R.id.datesContainter);
@@ -94,7 +107,9 @@ public class CustomDatePicker extends LinearLayout {
                 dateItem = initDateItem(calendar);
                 dateItem.setOnClickListener(secondDateItemClickListener);
             }
-            FrameLayout.LayoutParams param = new FrameLayout.LayoutParams(dateItemWidth, i == 0 ? datesContainer.getMeasuredHeight() : LayoutParams.WRAP_CONTENT);
+            FrameLayout.LayoutParams param = new FrameLayout.LayoutParams(dateItemWidth, i == 0 ? LayoutParams.MATCH_PARENT
+                    : LayoutParams.WRAP_CONTENT);
+            param.gravity = Gravity.CENTER_VERTICAL;
             dateItem.setLayoutParams(param);
             dateItem.setX((i + 1) * dateItemWidth);
             dateItem.setAlpha(0);
@@ -117,22 +132,28 @@ public class CustomDatePicker extends LinearLayout {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         if (oldw != w) {
-            dateItemWidth = (w - datesContainer.getPaddingLeft() - datesContainer.getPaddingRight()) / DATES_NUMBER;
+            LayoutParams layoutParams = (LayoutParams) datesContainer.getLayoutParams();
+            dateItemWidth = (w - layoutParams.leftMargin - layoutParams.rightMargin) / DATES_NUMBER;
             if (isFirstState) {
                 for (int i = 0; i < datesContainer.getChildCount(); i++) {
                     View child = datesContainer.getChildAt(i);
                     FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) child.getLayoutParams();
                     lp.width = dateItemWidth;
                     child.setX(i * dateItemWidth);
+                    Log.d("TAG", "position: " + child.getX());
                 }
             } else {
-                //todo refactor
-                int firstStateViewsItemsIterator = 1;
+//                //todo refactor
+                firstDatePositionX = firstDatePosition * dateItemWidth;
+                int firstStateViewsItemsIterator = 0;
                 int secondStateViewsItemsIterator = 0;
                 for (int i = 0; i < datesContainer.getChildCount(); i++) {
                     View child = datesContainer.getChildAt(i);
-                    RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) child.getLayoutParams();
+                    FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) child.getLayoutParams();
                     lp.width = dateItemWidth;
+                    if (i == firstDatePosition) {
+                        firstStateViewsItemsIterator++;
+                    }
                     if (child.getVisibility() == View.VISIBLE) {
                         child.setX(secondStateViewsItemsIterator * dateItemWidth);
                         secondStateViewsItemsIterator++;
@@ -147,7 +168,7 @@ public class CustomDatePicker extends LinearLayout {
 
     private void animateSelectedViewToSecondState(View view) {
         datesContainer.setClickable(false);
-        AnimationUtil.animateTranslateAnimation(view, datesContainer.getPaddingLeft(), new Runnable() {
+        AnimationUtil.animateTranslateAnimation(view, 0, new Runnable() {
             @Override
             public void run() {
                 initSecondState();
@@ -193,6 +214,7 @@ public class CustomDatePicker extends LinearLayout {
                 v.setSelected(true);
                 animateSelectedViewToSecondState(v);
             } else {
+                v.setSelected(false);
                 animateSelectedViewToFirstState(v);
             }
 
@@ -235,8 +257,81 @@ public class CustomDatePicker extends LinearLayout {
         title.setText(getContext().getString(R.string.firstDay));
     }
 
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        Parcelable superState = super.onSaveInstanceState();
+        SavedState ss = new SavedState(superState);
+        ss.isFirstState = isFirstState;
+        ss.firstDate = firstDate;
+        ss.firstDatePosition = firstDatePosition;
+        return ss;
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Parcelable state) {
+        SavedState ss = (SavedState) state;
+        super.onRestoreInstanceState(ss.getSuperState());
+        isFirstState = ss.isFirstState;
+        firstDate = ss.firstDate;
+        firstDatePosition = ss.firstDatePosition;
+        if (!isFirstState) {
+            View view = datesContainer.getChildAt(firstDatePosition);
+            view.setSelected(true);
+            view.setX(0);
+            title.setText(getContext().getString(R.string.secondDay));
+            for (int i = 0; i < datesContainer.getChildCount(); i++) {
+                View dateItemView = datesContainer.getChildAt(i);
+                if (!dateItemView.equals(view) && dateItemView.getVisibility() == View.VISIBLE) {
+                    dateItemView.setSelected(false);
+                    dateItemView.setAlpha(0);
+                    dateItemView.setVisibility(View.GONE);
+                }
+            }
+            initSecondState();
+        }
+    }
+
     public void setListener(DatePickerListener listener) {
         this.listener = listener;
     }
 
+    static class SavedState extends BaseSavedState {
+        boolean isFirstState;
+        int firstDatePosition;
+        Date firstDate;
+
+        SavedState(Parcelable superState) {
+            super(superState);
+        }
+
+        private SavedState(Parcel in) {
+            super(in);
+            isFirstState = in.readInt() == 1;
+            if (!isFirstState) {
+                firstDatePosition = in.readInt();
+                firstDate = new Date(in.readLong());
+            }
+        }
+
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            super.writeToParcel(out, flags);
+            out.writeInt(isFirstState ? 1 : 0);
+            if (!isFirstState) {
+                out.writeInt(firstDatePosition);
+                out.writeLong(firstDate.getTime());
+            }
+        }
+
+        public static final Parcelable.Creator<SavedState> CREATOR
+                = new Parcelable.Creator<SavedState>() {
+            public SavedState createFromParcel(Parcel in) {
+                return new SavedState(in);
+            }
+
+            public SavedState[] newArray(int size) {
+                return new SavedState[size];
+            }
+        };
+    }
 }
