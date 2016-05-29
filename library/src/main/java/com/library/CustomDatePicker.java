@@ -1,7 +1,5 @@
 package com.library;
 
-import android.animation.Animator;
-import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
@@ -17,10 +15,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+
 public class CustomDatePicker extends LinearLayout {
     private static final int DATES_NUMBER = 8;
-    private static final int ANIMATION_DURATION_SHORT = 150;
-    private static final int ANIMATION_DURATION_LONG = 500;
     private SimpleDateFormat monthFormat = new SimpleDateFormat("E", Locale.getDefault());
 
     private TextView title;
@@ -63,15 +60,10 @@ public class CustomDatePicker extends LinearLayout {
     private void initFirstState() {
         Calendar calendar = Calendar.getInstance();
         for (int i = 0; i < DATES_NUMBER; i++) {
-            View dateItem = LayoutInflater.from(getContext()).inflate(R.layout.date_picker_item, datesContainer, false);
-            TextView dayOfTheMonth = (TextView) dateItem.findViewById(R.id.dayOfTheMonth);
-            TextView dayOfTheWeek = (TextView) dateItem.findViewById(R.id.dayOfTheWeek);
             if (i != 0) {
                 calendar.add(Calendar.DATE, 1);
             }
-            int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
-            dayOfTheMonth.setText(String.format("%02d", dayOfMonth));
-            dayOfTheWeek.setText(monthFormat.format(calendar.getTime()));
+            View dateItem = initDateItem(calendar);
             dateItem.setOnClickListener(firstDateItemClickListener);
             datesContainer.addView(dateItem);
         }
@@ -83,8 +75,7 @@ public class CustomDatePicker extends LinearLayout {
             if (view.getVisibility() == View.GONE) {
                 view.setAlpha(0);
                 view.setVisibility(View.VISIBLE);
-                ObjectAnimator alphaAnimation = ObjectAnimator.ofFloat(view, View.ALPHA, 0, 1);
-                alphaAnimation.setDuration(ANIMATION_DURATION_SHORT).start();
+                AnimationUtil.animateFadeIn(view);
             }
         }
         datesContainer.setClickable(true);
@@ -99,23 +90,27 @@ public class CustomDatePicker extends LinearLayout {
             if (i == 0) {
                 dateItem = LayoutInflater.from(getContext()).inflate(R.layout.date_picker_divider, datesContainer, false);
             } else {
-                dateItem = LayoutInflater.from(getContext()).inflate(R.layout.date_picker_item, datesContainer, false);
-                TextView dayOfTheMonthTextView = (TextView) dateItem.findViewById(R.id.dayOfTheMonth);
-                TextView dayOfTheWeekTextView = (TextView) dateItem.findViewById(R.id.dayOfTheWeek);
                 calendar.add(Calendar.DATE, 1);
-                int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
-                dayOfTheMonthTextView.setText(String.format("%02d", dayOfMonth));
-                dayOfTheWeekTextView.setText(monthFormat.format(calendar.getTime()));
-                dateItem.setOnClickListener(checkoutItemClickListener);
+                dateItem = initDateItem(calendar);
+                dateItem.setOnClickListener(secondDateItemClickListener);
             }
             FrameLayout.LayoutParams param = new FrameLayout.LayoutParams(dateItemWidth, i == 0 ? datesContainer.getMeasuredHeight() : LayoutParams.WRAP_CONTENT);
             dateItem.setLayoutParams(param);
             dateItem.setX((i + 1) * dateItemWidth);
             dateItem.setAlpha(0);
             datesContainer.addView(dateItem);
-            ObjectAnimator alphaAnimation = ObjectAnimator.ofFloat(dateItem, View.ALPHA, 0, 1);
-            alphaAnimation.setDuration(ANIMATION_DURATION_SHORT).start();
+            AnimationUtil.animateFadeIn(dateItem);
         }
+    }
+
+    private View initDateItem(Calendar calendar) {
+        View dateItem = LayoutInflater.from(getContext()).inflate(R.layout.date_picker_item, datesContainer, false);
+        TextView dayOfTheMonth = (TextView) dateItem.findViewById(R.id.dayOfTheMonth);
+        TextView dayOfTheWeek = (TextView) dateItem.findViewById(R.id.dayOfTheWeek);
+        int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
+        dayOfTheMonth.setText(String.format("%02d", dayOfMonth));
+        dayOfTheWeek.setText(monthFormat.format(calendar.getTime()));
+        return dateItem;
     }
 
     @Override
@@ -132,156 +127,95 @@ public class CustomDatePicker extends LinearLayout {
                 }
             } else {
                 //todo refactor
-                int checkInItemsIterator = 1;
-                int checkOutItemsIterator = 0;
+                int firstStateViewsItemsIterator = 1;
+                int secondStateViewsItemsIterator = 0;
                 for (int i = 0; i < datesContainer.getChildCount(); i++) {
                     View child = datesContainer.getChildAt(i);
                     RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) child.getLayoutParams();
                     lp.width = dateItemWidth;
                     if (child.getVisibility() == View.VISIBLE) {
-                        child.setX(checkOutItemsIterator * dateItemWidth);
-                        checkOutItemsIterator++;
+                        child.setX(secondStateViewsItemsIterator * dateItemWidth);
+                        secondStateViewsItemsIterator++;
                     } else {
-                        child.setX(checkInItemsIterator * dateItemWidth);
-                        checkInItemsIterator++;
+                        child.setX(firstStateViewsItemsIterator * dateItemWidth);
+                        firstStateViewsItemsIterator++;
                     }
                 }
             }
         }
     }
 
-
-    private void animateFadeOutCheckInViews(final View view) {
-        ObjectAnimator fadeOut = ObjectAnimator.ofFloat(view, View.ALPHA, 1, 0);
-        fadeOut.setDuration(ANIMATION_DURATION_SHORT);
-        fadeOut.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                if (!isFirstState) {
-                    datesContainer.removeView(view);
-                } else {
-                    view.setVisibility(View.GONE);
-                }
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animation) {
-
-            }
-        });
-        fadeOut.start();
-    }
-
-
-    private void animateSelectedViewToCheckout(View view) {
-        ObjectAnimator translateX = ObjectAnimator.ofFloat(view, "x", datesContainer.getPaddingLeft());
-        translateX.setDuration(ANIMATION_DURATION_LONG);
+    private void animateSelectedViewToSecondState(View view) {
         datesContainer.setClickable(false);
-        translateX.addListener(new Animator.AnimatorListener() {
+        AnimationUtil.animateTranslateAnimation(view, datesContainer.getPaddingLeft(), new Runnable() {
             @Override
-            public void onAnimationStart(Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
+            public void run() {
                 initSecondState();
                 datesContainer.setClickable(true);
                 isFirstState = false;
                 title.setText(getContext().getString(R.string.secondDay));
             }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animation) {
-
-            }
         });
-        translateX.start();
     }
 
-    private void animateSelectedViewToCheckin(final View view) {
-        ObjectAnimator translateX = ObjectAnimator.ofFloat(view, "x", firstDatePositionX);
-        translateX.setDuration(ANIMATION_DURATION_LONG);
+    private void animateSelectedViewToFirstState(final View view) {
         datesContainer.setClickable(false);
-        translateX.addListener(new Animator.AnimatorListener() {
+        AnimationUtil.animateTranslateAnimation(view, firstDatePositionX, new Runnable() {
             @Override
-            public void onAnimationStart(Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
+            public void run() {
                 returnToFirstState();
             }
+        });
+    }
 
+    private void animateFadeOut(final View v) {
+        AnimationUtil.animateFadeOut(v, new Runnable() {
             @Override
-            public void onAnimationCancel(Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animation) {
-
+            public void run() {
+                if (isFirstState) {
+                    v.setVisibility(View.GONE);
+                } else {
+                    datesContainer.removeView(v);
+                }
             }
         });
-        translateX.start();
     }
 
     private OnClickListener firstDateItemClickListener = new OnClickListener() {
         @Override
         public void onClick(View v) {
-            v.setSelected(true);
             if (isFirstState) {
-                animateSelectedViewToCheckout(v);
-                for (int i = 0; i < datesContainer.getChildCount(); i++) {
-                    if (datesContainer.getChildAt(i) != v) {
-                        animateFadeOutCheckInViews(datesContainer.getChildAt(i));
-                    } else {
-                        firstDatePosition = i;
-                        firstDatePositionX = v.getX();
-                        Calendar calendar = Calendar.getInstance();
-                        calendar.add(Calendar.DATE, firstDatePosition);
-                        firstDate = calendar.getTime();
-                    }
-                }
+                firstDatePosition = datesContainer.indexOfChild(v);
+                firstDatePositionX = v.getX();
+                Calendar calendar = Calendar.getInstance();
+                calendar.add(Calendar.DATE, firstDatePosition);
+                firstDate = calendar.getTime();
+                v.setSelected(true);
+                animateSelectedViewToSecondState(v);
             } else {
-                for (int i = 0; i < datesContainer.getChildCount(); i++) {
-                    if (datesContainer.getChildAt(i) != v && datesContainer.getChildAt(i).getVisibility() == View.VISIBLE) {
-                        datesContainer.getChildAt(i).setSelected(false);
-                        animateFadeOutCheckInViews(datesContainer.getChildAt(i));
-                    }
+                animateSelectedViewToFirstState(v);
+            }
+
+            for (int i = 0; i < datesContainer.getChildCount(); i++) {
+                View dateItemView = datesContainer.getChildAt(i);
+                if (!dateItemView.equals(v) && dateItemView.getVisibility() == View.VISIBLE) {
+                    dateItemView.setSelected(false);
+                    animateFadeOut(dateItemView);
                 }
-                v.setSelected(false);
-                animateSelectedViewToCheckin(v);
             }
         }
     };
 
-    private OnClickListener checkoutItemClickListener = new OnClickListener() {
+    private OnClickListener secondDateItemClickListener = new OnClickListener() {
         @Override
         public void onClick(View v) {
             v.setSelected(true);
-            for (int i = 0; i < datesContainer.getChildCount(); i++) {
-                if (datesContainer.getChildAt(i) == v && i != datesContainer.getChildCount() - 1) {
-                    int selectedCheckoutPosition = i - DATES_NUMBER;
+            for (int i = DATES_NUMBER; i < datesContainer.getChildCount(); i++) {
+                if (datesContainer.getChildAt(i).equals(v)) {
+                    int selectedSecondDatePosition = i - DATES_NUMBER;
                     Calendar calendar = Calendar.getInstance();
                     calendar.setTime(firstDate);
-                    calendar.add(Calendar.DATE, selectedCheckoutPosition);
+                    calendar.add(Calendar.DATE, selectedSecondDatePosition);
                     secondDate = calendar.getTime();
                     break;
                 }
@@ -292,18 +226,17 @@ public class CustomDatePicker extends LinearLayout {
         }
     };
 
-    public void setListener(DatePickerListener listener) {
-        this.listener = listener;
-    }
-
-    public void resetView() {
+    private void resetView() {
         isFirstState = true;
         firstDatePosition = 0;
         firstDatePositionX = 0;
         firstDate = null;
         secondDate = null;
-        //   datesContainer.removeAllViews();
         title.setText(getContext().getString(R.string.firstDay));
-        // initFirstState();
     }
+
+    public void setListener(DatePickerListener listener) {
+        this.listener = listener;
+    }
+
 }
