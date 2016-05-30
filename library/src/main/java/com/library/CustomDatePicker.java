@@ -4,14 +4,12 @@ import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.view.GravityCompat;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -21,14 +19,11 @@ import java.util.Date;
 import java.util.Locale;
 
 //TODO add atributes
-//TODO add saving state
-//TODO fix selected area size
 //TODO ondetachfromwindow
 //TODO open in fragment
 //TODO add scroll
 //TODO add dif days count
-//TODO check padding
-public class CustomDatePicker extends LinearLayout {
+public class CustomDatePicker extends RelativeLayout {
     private static final int DATES_NUMBER = 7;
     private SimpleDateFormat monthFormat = new SimpleDateFormat("E", Locale.getDefault());
 
@@ -61,13 +56,27 @@ public class CustomDatePicker extends LinearLayout {
     }
 
     private void init() {
-        setOrientation(LinearLayout.VERTICAL);
         setBackgroundColor(ContextCompat.getColor(getContext(), R.color.date_picker_background));
         setSaveEnabled(true);
         View view = LayoutInflater.from(getContext()).inflate(R.layout.date_picker, this);
         title = (TextView) view.findViewById(R.id.title);
         datesContainer = (FrameLayout) view.findViewById(R.id.datesContainter);
+        playAppearingAnimation();
         initFirstState();
+    }
+
+    private void playAppearingAnimation() {
+        datesContainer.setVisibility(INVISIBLE);
+        datesContainer.post(new Runnable() {
+            @Override
+            public void run() {
+                float top = datesContainer.getTop();
+                datesContainer.setY(top - datesContainer.getHeight());
+                datesContainer.setAlpha(0);
+                datesContainer.setVisibility(VISIBLE);
+                AnimationUtil.animateTranslateAndAlphaAnimation(datesContainer, top);
+            }
+        });
     }
 
     private void initFirstState() {
