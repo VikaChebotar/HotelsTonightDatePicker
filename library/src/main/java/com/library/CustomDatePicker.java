@@ -61,12 +61,13 @@ public class CustomDatePicker extends LinearLayout {
         datesContainer.setWeightSum(DATES_NUMBER);
         setLayoutTransition(null);
         datesContainer.setLayoutTransition(null);
-        playAppearingAnimation();
+        //  playAppearingAnimation();
+        datesContainer.setVisibility(INVISIBLE);
         initFirstState();
     }
 
-    private void playAppearingAnimation() {
-        datesContainer.setVisibility(INVISIBLE);
+    public void playAppearingAnimation() {
+
         datesContainer.post(new Runnable() {
             @Override
             public void run() {
@@ -77,6 +78,11 @@ public class CustomDatePicker extends LinearLayout {
                 AnimationUtil.animateTranslateAndAlphaAnimation(datesContainer, top);
             }
         });
+    }
+
+    public void playDisappearingAnimation() {
+        AnimationUtil.animateFadeOut(datesContainer);
+        AnimationUtil.animateFadeOut(title);
     }
 
     private void initFirstState() {

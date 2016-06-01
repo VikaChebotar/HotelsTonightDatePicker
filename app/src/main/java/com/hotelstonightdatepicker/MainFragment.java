@@ -1,7 +1,10 @@
 package com.hotelstonightdatepicker;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,7 +24,13 @@ public class MainFragment extends Fragment {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new CustomDatePickerFragment().show(getFragmentManager(), CustomDatePickerFragment.class.getName());
+                //   new CustomDatePickerFragment().show(getFragmentManager(), CustomDatePickerFragment.class.getName());
+
+                Intent intent = new Intent(getActivity(), CustomDatePickerActivity.class);
+                ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(getActivity(), button, "datePicker");
+                ActivityCompat.startActivity(getActivity(), intent, options.toBundle());
+//                getActivity().startActivity(intent);
+
             }
         });
         return view;

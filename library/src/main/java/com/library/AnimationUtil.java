@@ -4,11 +4,16 @@ import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 
 public class AnimationUtil {
+    public static final int ANIMATION_DURATION_VERY_SHORT = 50;
     public static final int ANIMATION_DURATION_SHORT = 150;
     public static final int ANIMATION_DURATION_LONG = 300;
 
     public static void animateFadeIn(View view) {
         view.animate().alpha(1).setDuration(ANIMATION_DURATION_SHORT).start();
+    }
+
+    public static void animateFadeOut(View view) {
+        view.animate().alpha(0).setDuration(ANIMATION_DURATION_VERY_SHORT).start();
     }
 
     public static void animateFadeOut(View view, Runnable endAction) {
@@ -17,30 +22,6 @@ public class AnimationUtil {
 
     public static void animateTranslateAnimation(final View view, float x, final Runnable endAction) {
         view.animate().x(x).setDuration(ANIMATION_DURATION_LONG).withEndAction(endAction).start();
-//        ObjectAnimator selectedViewAnimator = ObjectAnimator.ofFloat(view, "x", x);
-//        selectedViewAnimator.setDuration(AnimationUtil.ANIMATION_DURATION_LONG);
-//        selectedViewAnimator.addListener(new Animator.AnimatorListener() {
-//            @Override
-//            public void onAnimationStart(Animator animation) {
-//
-//            }
-//
-//            @Override
-//            public void onAnimationEnd(Animator animation) {
-//               endAction.run();
-//            }
-//
-//            @Override
-//            public void onAnimationCancel(Animator animation) {
-//
-//            }
-//
-//            @Override
-//            public void onAnimationRepeat(Animator animation) {
-//
-//            }
-//        });
-//        selectedViewAnimator.start();
     }
 
     public static void animateTranslateAndAlphaAnimation(View view, float y) {
