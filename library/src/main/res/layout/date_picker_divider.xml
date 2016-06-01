@@ -3,8 +3,7 @@
     android:id="@+id/datePickerDivider"
     android:layout_width="wrap_content"
     android:gravity="center"
-    android:layout_gravity="center"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:text="@string/divider_text"
     android:textColor="@color/day_of_month_text_color"
     android:textSize="@dimen/divider_text_size" />

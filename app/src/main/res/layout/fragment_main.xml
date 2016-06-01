@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:background="@android:color/holo_blue_bright"
+    android:layout_height="match_parent">
+
+    <Button
+        android:id="@+id/datePickerBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:background="@color/date_picker_background"
+        android:padding="@dimen/activity_horizontal_margin"
+        android:text="Pick date range"
+        android:textColor="@android:color/white" />
+
+</RelativeLayout>

@@ -7,7 +7,6 @@
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
         android:layout_gravity="center_horizontal"
         android:gravity="center"
         android:paddingBottom="@dimen/horizontal_margin"
@@ -17,11 +16,11 @@
         android:textColor="@android:color/white"
         android:textSize="@dimen/titleTextSize" />
 
-    <FrameLayout
+    <LinearLayout
+        android:orientation="horizontal"
         android:id="@+id/datesContainter"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/title"
         android:layout_marginBottom="@dimen/horizontal_margin"
         android:layout_marginLeft="@dimen/side_margin"
         android:layout_marginRight="@dimen/side_margin" />

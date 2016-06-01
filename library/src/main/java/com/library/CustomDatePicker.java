@@ -5,12 +5,10 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.FrameLayout;
-import android.widget.RelativeLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
@@ -23,20 +21,18 @@ import java.util.Locale;
 //TODO open in fragment
 //TODO add scroll
 //TODO add dif days count
-public class CustomDatePicker extends RelativeLayout {
+public class CustomDatePicker extends LinearLayout {
     private static final int DATES_NUMBER = 7;
     private SimpleDateFormat monthFormat = new SimpleDateFormat("E", Locale.getDefault());
 
     private TextView title;
-    private FrameLayout datesContainer;
+    private LinearLayout datesContainer;
 
     private boolean isFirstState = true;
     private int firstDatePosition;
     private float firstDatePositionX;
     private Date firstDate;
     private Date secondDate;
-    private int dateItemWidth;
-
     private DatePickerListener listener;
 
     public CustomDatePicker(Context context) {
@@ -56,11 +52,15 @@ public class CustomDatePicker extends RelativeLayout {
     }
 
     private void init() {
+        setOrientation(VERTICAL);
         setBackgroundColor(ContextCompat.getColor(getContext(), R.color.date_picker_background));
         setSaveEnabled(true);
         View view = LayoutInflater.from(getContext()).inflate(R.layout.date_picker, this);
         title = (TextView) view.findViewById(R.id.title);
-        datesContainer = (FrameLayout) view.findViewById(R.id.datesContainter);
+        datesContainer = (LinearLayout) view.findViewById(R.id.datesContainter);
+        datesContainer.setWeightSum(DATES_NUMBER);
+        setLayoutTransition(null);
+        datesContainer.setLayoutTransition(null);
         playAppearingAnimation();
         initFirstState();
     }
@@ -86,8 +86,11 @@ public class CustomDatePicker extends RelativeLayout {
                 calendar.add(Calendar.DATE, 1);
             }
             View dateItem = initDateItem(calendar);
+            LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT);
+            param.gravity = Gravity.CENTER_VERTICAL;
+            param.weight = 1;
             dateItem.setOnClickListener(firstDateItemClickListener);
-            datesContainer.addView(dateItem);
+            datesContainer.addView(dateItem, param);
         }
     }
 
@@ -116,15 +119,14 @@ public class CustomDatePicker extends RelativeLayout {
                 dateItem = initDateItem(calendar);
                 dateItem.setOnClickListener(secondDateItemClickListener);
             }
-            FrameLayout.LayoutParams param = new FrameLayout.LayoutParams(dateItemWidth, i == 0 ? LayoutParams.MATCH_PARENT
-                    : LayoutParams.WRAP_CONTENT);
+            LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT);
             param.gravity = Gravity.CENTER_VERTICAL;
-            dateItem.setLayoutParams(param);
-            dateItem.setX((i + 1) * dateItemWidth);
+            param.weight = 1;
             dateItem.setAlpha(0);
-            datesContainer.addView(dateItem);
+            datesContainer.addView(dateItem, param);
             AnimationUtil.animateFadeIn(dateItem);
         }
+
     }
 
     private View initDateItem(Calendar calendar) {
@@ -139,40 +141,14 @@ public class CustomDatePicker extends RelativeLayout {
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
         if (oldw != w) {
-            LayoutParams layoutParams = (LayoutParams) datesContainer.getLayoutParams();
-            dateItemWidth = (w - layoutParams.leftMargin - layoutParams.rightMargin) / DATES_NUMBER;
-            if (isFirstState) {
-                for (int i = 0; i < datesContainer.getChildCount(); i++) {
-                    View child = datesContainer.getChildAt(i);
-                    FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) child.getLayoutParams();
-                    lp.width = dateItemWidth;
-                    child.setX(i * dateItemWidth);
-                    Log.d("TAG", "position: " + child.getX());
-                }
-            } else {
-//                //todo refactor
+            LinearLayout.LayoutParams datesContainerLp = (LayoutParams) datesContainer.getLayoutParams();
+            int dateItemWidth = (w - datesContainerLp.leftMargin - datesContainerLp.rightMargin) / DATES_NUMBER;
+            if (!isFirstState) {
                 firstDatePositionX = firstDatePosition * dateItemWidth;
-                int firstStateViewsItemsIterator = 0;
-                int secondStateViewsItemsIterator = 0;
-                for (int i = 0; i < datesContainer.getChildCount(); i++) {
-                    View child = datesContainer.getChildAt(i);
-                    FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) child.getLayoutParams();
-                    lp.width = dateItemWidth;
-                    if (i == firstDatePosition) {
-                        firstStateViewsItemsIterator++;
-                    }
-                    if (child.getVisibility() == View.VISIBLE) {
-                        child.setX(secondStateViewsItemsIterator * dateItemWidth);
-                        secondStateViewsItemsIterator++;
-                    } else {
-                        child.setX(firstStateViewsItemsIterator * dateItemWidth);
-                        firstStateViewsItemsIterator++;
-                    }
-                }
             }
         }
+        super.onSizeChanged(w, h, oldw, oldh);
     }
 
     private void animateSelectedViewToSecondState(View view) {
@@ -193,6 +169,8 @@ public class CustomDatePicker extends RelativeLayout {
         AnimationUtil.animateTranslateAnimation(view, firstDatePositionX, new Runnable() {
             @Override
             public void run() {
+                view.setLeft((int) firstDatePositionX);
+                view.setTranslationX(0);
                 returnToFirstState();
             }
         });
@@ -229,7 +207,7 @@ public class CustomDatePicker extends RelativeLayout {
 
             for (int i = 0; i < datesContainer.getChildCount(); i++) {
                 View dateItemView = datesContainer.getChildAt(i);
-                if (!dateItemView.equals(v) && dateItemView.getVisibility() == View.VISIBLE) {
+                if (i != firstDatePosition && dateItemView.getVisibility() == View.VISIBLE) {
                     dateItemView.setSelected(false);
                     animateFadeOut(dateItemView);
                 }

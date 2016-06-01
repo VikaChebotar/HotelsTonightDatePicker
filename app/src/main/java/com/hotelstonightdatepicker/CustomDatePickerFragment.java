@@ -1,4 +1,4 @@
-package com.library;
+package com.hotelstonightdatepicker;
 
 import android.app.Dialog;
 import android.graphics.Color;
@@ -19,7 +19,7 @@ public class CustomDatePickerFragment extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = new CustomDatePicker(getContext());
+        View view = inflater.inflate(R.layout.date_picker_fragment, container, false);
         return view;
     }
 
