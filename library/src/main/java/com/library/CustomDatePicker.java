@@ -17,12 +17,14 @@ import java.util.Date;
 import java.util.Locale;
 
 //TODO add atributes
-//TODO ondetachfromwindow
 //TODO open in fragment
 //TODO add scroll
 //TODO add dif days count
+//TODO add back btn
+//TODO refactor
 public class CustomDatePicker extends LinearLayout {
-    private static final int DATES_NUMBER = 7;
+    private static final int DATES_NUMBER_FIRST_DATE =5;
+    private static final int DATES_NUMBER_SECOND_DATE = 6;
     private SimpleDateFormat monthFormat = new SimpleDateFormat("E", Locale.getDefault());
 
     private TextView title;
@@ -58,7 +60,6 @@ public class CustomDatePicker extends LinearLayout {
         View view = LayoutInflater.from(getContext()).inflate(R.layout.date_picker, this);
         title = (TextView) view.findViewById(R.id.title);
         datesContainer = (LinearLayout) view.findViewById(R.id.datesContainter);
-        datesContainer.setWeightSum(DATES_NUMBER);
         setLayoutTransition(null);
         datesContainer.setLayoutTransition(null);
         //  playAppearingAnimation();
@@ -67,7 +68,6 @@ public class CustomDatePicker extends LinearLayout {
     }
 
     public void playAppearingAnimation() {
-
         datesContainer.post(new Runnable() {
             @Override
             public void run() {
@@ -86,17 +86,15 @@ public class CustomDatePicker extends LinearLayout {
     }
 
     private void initFirstState() {
+        datesContainer.setWeightSum(DATES_NUMBER_FIRST_DATE);
         Calendar calendar = Calendar.getInstance();
-        for (int i = 0; i < DATES_NUMBER; i++) {
+        for (int i = 0; i < DATES_NUMBER_FIRST_DATE; i++) {
             if (i != 0) {
                 calendar.add(Calendar.DATE, 1);
             }
             View dateItem = initDateItem(calendar);
-            LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT);
-            param.gravity = Gravity.CENTER_VERTICAL;
-            param.weight = 1;
             dateItem.setOnClickListener(firstDateItemClickListener);
-            datesContainer.addView(dateItem, param);
+            datesContainer.addView(dateItem);
         }
     }
 
@@ -114,25 +112,26 @@ public class CustomDatePicker extends LinearLayout {
     }
 
     private void initSecondState() {
+        AnimationUtil.animateWeightSum(datesContainer, DATES_NUMBER_SECOND_DATE + 2);
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(firstDate);
-        for (int i = 0; i < DATES_NUMBER - 1; i++) {
+        for (int i = 0; i < DATES_NUMBER_SECOND_DATE + 1; i++) {
             View dateItem;
             if (i == 0) {
                 dateItem = LayoutInflater.from(getContext()).inflate(R.layout.date_picker_divider, datesContainer, false);
+                LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(0, LayoutParams.MATCH_PARENT);
+                param.gravity = Gravity.CENTER_VERTICAL;
+                param.weight = 1;
+                dateItem.setLayoutParams(param);
             } else {
                 calendar.add(Calendar.DATE, 1);
                 dateItem = initDateItem(calendar);
                 dateItem.setOnClickListener(secondDateItemClickListener);
             }
-            LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT);
-            param.gravity = Gravity.CENTER_VERTICAL;
-            param.weight = 1;
             dateItem.setAlpha(0);
-            datesContainer.addView(dateItem, param);
+            datesContainer.addView(dateItem);
             AnimationUtil.animateFadeIn(dateItem);
         }
-
     }
 
     private View initDateItem(Calendar calendar) {
@@ -142,6 +141,10 @@ public class CustomDatePicker extends LinearLayout {
         int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
         dayOfTheMonth.setText(String.format("%02d", dayOfMonth));
         dayOfTheWeek.setText(monthFormat.format(calendar.getTime()));
+        LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(0, LayoutParams.MATCH_PARENT);
+        param.gravity = Gravity.CENTER_VERTICAL;
+        param.weight = 1;
+        dateItem.setLayoutParams(param);
         return dateItem;
     }
 
@@ -149,7 +152,7 @@ public class CustomDatePicker extends LinearLayout {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         if (oldw != w) {
             LinearLayout.LayoutParams datesContainerLp = (LayoutParams) datesContainer.getLayoutParams();
-            int dateItemWidth = (w - datesContainerLp.leftMargin - datesContainerLp.rightMargin) / DATES_NUMBER;
+            int dateItemWidth = (w - datesContainerLp.leftMargin - datesContainerLp.rightMargin) / DATES_NUMBER_FIRST_DATE;
             if (!isFirstState) {
                 firstDatePositionX = firstDatePosition * dateItemWidth;
             }
@@ -172,6 +175,7 @@ public class CustomDatePicker extends LinearLayout {
 
     private void animateSelectedViewToFirstState(final View view) {
         datesContainer.setClickable(false);
+        AnimationUtil.animateWeightSum(datesContainer, DATES_NUMBER_FIRST_DATE);
         AnimationUtil.animateTranslateAnimation(view, firstDatePositionX, new Runnable() {
             @Override
             public void run() {
@@ -225,9 +229,9 @@ public class CustomDatePicker extends LinearLayout {
         @Override
         public void onClick(View v) {
             v.setSelected(true);
-            for (int i = DATES_NUMBER; i < datesContainer.getChildCount(); i++) {
+            for (int i = DATES_NUMBER_FIRST_DATE; i < datesContainer.getChildCount(); i++) {
                 if (datesContainer.getChildAt(i).equals(v)) {
-                    int selectedSecondDatePosition = i - DATES_NUMBER;
+                    int selectedSecondDatePosition = i - DATES_NUMBER_FIRST_DATE;
                     Calendar calendar = Calendar.getInstance();
                     calendar.setTime(firstDate);
                     calendar.add(Calendar.DATE, selectedSecondDatePosition);
@@ -282,11 +286,13 @@ public class CustomDatePicker extends LinearLayout {
             }
             initSecondState();
         }
+        playAppearingAnimation();
     }
 
     public void setListener(DatePickerListener listener) {
         this.listener = listener;
     }
+
 
     static class SavedState extends BaseSavedState {
         boolean isFirstState;

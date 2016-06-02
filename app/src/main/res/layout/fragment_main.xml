@@ -8,11 +8,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
-        android:transitionName="datePicker"
         android:layout_alignParentTop="true"
         android:background="@color/date_picker_background"
         android:padding="@dimen/activity_horizontal_margin"
         android:text="Pick date range"
-        android:textColor="@android:color/white" />
+        android:textColor="@android:color/white"
+        android:transitionName="datePicker" />
 
 </RelativeLayout>
